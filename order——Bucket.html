@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="http://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <title>排序算法</title>
+    <style>
+    .pt10{
+        padding-top: 10px;
+    }
+    .text_center{
+        text-align: center;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 pt10">
+                <form class="form-inline" id="number_form">
+                    <div class="form-group">
+                        <label for="numberInput">数字</label>
+                        <input type="text" class="form-control" id="numberInput" placeholder="请输入要排序的数字">
+                    </div>
+                    <button class="btn btn-primary" type="submit">提交</button>
+                </form>
+                <div class="row pt10">
+                    <div class=" col-xs-6 col-xs-offset-3">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>序号</th>
+                                    <th>数字</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" class ="text_center">目前没有数字...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button type="button" class="btn btn-default" id="sortBtn">排序</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 pt10">
+                <!--状态条-->
+                <p class="bg-primary">
+
+                </p>
+            </div>
+        </div>
+    </div>
+    <script>
+        const oForm = document.getElementById('number_form');
+        const oNumInput = document.getElementById('numberInput');
+        const sortBtn = document.getElementById('sortBtn');
+        const numArr = [];
+        const oMsg = document.querySelector('.bg-primary');
+        const orderedArr = [];
+
+        let numTimer = 1;
+        oForm.addEventListener('submit',(event)=>{
+            event.preventDefault();
+            //trim去除左右的空格
+            const num = oNumInput.value.trim();
+            // alert(num);
+            //安全性检测
+            if(num.length>0&&!isNaN(num)){
+                if(numTimer == 1){
+                document.querySelector('tbody').innerHTML = getTrHtml(num);
+                numTimer++;
+                oNumInput.value='';
+                }else{
+                    document.querySelector('tbody').innerHTML += getTrHtml(num);
+                    numTimer++;
+                    numArr.push(parseInt(num));
+                    oNumInput.value='';
+                }
+            }else{
+                alert("请输入数字");
+            }    
+        });
+
+       //提供新的一行
+       //1 序号 从1开始增
+       //2 用户在表单中添的值
+       //3 返回tr html
+       //需要传递参数过来
+       function getTrHtml(num) {
+            const str = `
+             <tr>
+                <td>${numTimer}</td>
+                <td>${num}</td>
+             </tr>    
+            `;
+            return str;
+       }
+       
+       //桶排序 BucketSort
+       const bucketArr = [];
+       for(let i=0;i<11;i++){
+            // 桶子里都是空的
+            bucketArr[i] = 0;
+        }
+       sortBtn.addEventListener('click',function(){
+        //    alert('sort');
+            // console.log(numArr);
+            for(let i=0;i<numArr.length;i++) {
+                bucketArr[numArr[i]]++; 
+            }
+            // console.log(bucketArr.length);
+            for(let i=0;i<bucketArr.length;i++){
+                // console.log(i);
+                for(let j=1;j<bucketArr[i];j++){
+                    // console.log(i+',');
+                    orderedArr.push(i);
+                } 
+            }
+            oMsg.innerHTML = `从小到大排序：${orderedArr.join(',')}`;
+       });
+
+       function bubbleSort(arr){
+           for(var i=0;i<arr.length;i++){
+               for(var j=i;j<arr.length;j++){
+                   if(arr[i]>arr[j]){
+                       const temp = arr[i];
+                       arr[i]=arr[j];
+                       arr[j]= temp; 
+                   }
+               }
+           }
+       }
+    </script>
+</body>
+</html>
