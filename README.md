@@ -1,8 +1,11 @@
-#javascript-对象的属性的延伸学习
-##前言
+# javascript-对象的属性的延伸学习
+
+## 前言
+
 在学习[vue数据绑定](http://www.jianshu.com/p/d3a15a1f94a0)的较底层原理时，被setter和getter困惑了很久，一路追根溯源，通过阅读《你不知道的javascript》和红宝书理解了迷惑我的setter、getter。
 
-##首先了解什么是属性描述符
+## 首先了解什么是属性描述符
+[](http://xurenjie.cn:3000/img/dog/dog.png)
 在ES5之前，javascript语言没有提供可以检验属性特性的方法，是否只读？不知道；是否可配置？不知道；是否能用for in枚举？不知道。
 
 ES5之后就有了如下的属性描述符：
@@ -36,6 +39,7 @@ ES5之后就有了如下的属性描述符：
     Dogger.breed = '哈士奇'
 ```
 很好理解，当writeable为false的时候，其实定义了一个空的setter(等会会提),这个操作将无效,在严格模式下会抛出一个TypeError的错误。
+[](http://xurenjie.cn:3000/img/dog/dog4.png)
 ##configurable
 与configurable紧密相连的就是**defineProperty( )**这个方法了，当configurable: false 将不可使用‘好基友’defineProperty( )来配置。后面还会介绍一个会受影响的**delete**。
 ```
@@ -59,8 +63,8 @@ Object.defineProperty( Dogger, "breed", {
 } ) // TypeError
 ```
 这只作死的柴犬在通过**defineProperty( )**把自己配置成哈士奇之后，顺便把**configurable**修改为**false**，这样之后**defineProperty( )**不管是否严格模式都将报TypeError的错误,这是单向操作，无法撤销。 一失足成千古恨～
-
-###例外
+[](http://xurenjie.cn:3000/img/dog/dog1.png)
+### 例外
 还是可以通过writable的方式修改breed的嘛～，不过这里有一个方法可以让dogger彻底绝望，使breed无法修改，也就是这个例外：这个时候**defineProperty( )**还是可以使用的（如下），只可以修改writable，configurable需要与刚才的false一致。
 
 ```
@@ -72,7 +76,8 @@ Object.defineProperty( Dogger, "breed", {
 } )
 ```
 这样之后柴犬永远变成了只哈士奇。
-###关于delete
+[](http://xurenjie.cn:3000/img/dog/dog2.png)
+### 关于delete
 有人说我用delete删除这个breed属性不就好了？
 
 
@@ -113,8 +118,8 @@ delete只是用来直接删除对象（可删除的）属性，当breed属性是
 >o.propertyIsEnumerable('b'); // false
 >o.propertyIsEnumerable('c'); // false
 
-##[ [ Get ] ]和[ [ Put ] ]
-###[ [ Get ] ]
+## [ [ Get ] ]和[ [ Put ] ]
+### [ [ Get ] ]
 
 ```
 Dogger.breed
@@ -125,14 +130,14 @@ Dogger.breed
 2. 在该对象的原型链上查找有没有这个属性。
 3. 都没找到返回undefined（**注意：如果那个属性值恰好为undefined时，虽然返回值一样，但是底层发生的事是不一样的**）
 
-###[ [ Put ] ]
+### [ [ Put ] ]
 [ [ Get ] ]对应[ [ Put ] ]操作，一旦给对象属性赋值就触发设置和创建这个属性发生的事情是这样的：
 1. 首先确定是否存在这个属性。breed是否存在
 2. 存在，是否是setter。是setter就调用setter，是否是setter来给breed赋值
 3. writable是否为false，false则无效。breed的writable是否为false
 4. 设置值为该属性的值
 
-##Getter和Setter
+## Getter和Setter
 在《 javascript高级程序设计 》中成为访问器属性，也称为访问描述符，getter和setter是两个隐形的函数，getter为读取属性值的函数，setter为设置属性值的函数，在访问这个阶段我们关注的是四个属性：
 1. set
 2. get
@@ -161,7 +166,7 @@ Dogger.breed-type // '柴犬品种'
 
 ```
 没毛病，不管是隐式调用还是显式确实能够让我们定义属性，自动调用隐藏函数，返回值为属性访问的返回值
-
+[](http://xurenjie.cn:3000/img/dog/dog3.png)
 如果这时候，我们想用赋值操作给Dogger改变属性会怎么样？
 
 ```
@@ -171,7 +176,48 @@ Dogger.breed // '柴犬'
 
 ```
 
-由于只定义了breed的getter，所以对它的值进行设置时**set操作会忽略赋值操作**（也不会报错），就算定义了setter，自定义
-的getter还是只会
+由于只定义了breed的getter，所以对它的值进行设置时**set操作会忽略赋值操作**（也不会报错）。其实就算定义了setter，自定义
+的getter还是只会返回getter设置的值。
 
+因此你去改变属性的值时，你还需要定义一个setter，通常来说，他们是成双成对的。不写严格模式会报错。
 
+setter其实就是我们最常用的赋值操作
+```
+var Dogger = {
+    get breed() {
+        return  '柴犬'
+    }
+    set breed(val) {
+        this._breed_ = val
+    }
+}
+
+Dogger.breed = '哈士奇'
+Dogger.breed // '哈士奇'
+```
+这样一来，赋值操作就可以改变啦！我们把赋值操作存储给新建的_breed_ ，只是一种惯例，通过setter可以改变对变量访问值的处理规则。
+
+### 如果不用_breed_，setter/getter的调用执行时机
+```
+class Dogger {
+    constructor (name, breed) {
+        this.name = name;
+        this.breed = breed;
+    }
+    set breed (breed) {
+        console.log("setter");
+        this.breed = breed;
+    }
+    get breed () {
+        console.log("getter");
+        return this.breed;
+    }
+}
+
+var dogger = new Dogger("忠犬八公", '柴犬');
+```
+1. 代码报错了！！！这是因为，在构造函数中执行this.breed = breed的时候，就会去调用set breed，在set breed方法中，我们又执行this.breed = breed，进行无限递归，最后导致**栈溢出(RangeError)**。
+2. 因此，原来只要this.breed中的属性名和set breed/get breed后面的breed一致，对this.breed就会调用setter/getter，也就是说setter/getter是hook函数，而真实的存储变量是_breed_，我们可以在代码中直接获取它。
+# 参考
+> 1. 你不知道的javascript
+> 2. javascript高级程序设计
